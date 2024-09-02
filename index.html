@@ -3,37 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Localização com Geolocation API</title>
+    <title>Localização no Mapa com OpenStreetMap</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
-    <h1>Localização do Usuário</h1>
+    <h1>Localização do Usuário no Mapa</h1>
     <button onclick="getLocation()">Obter Localização</button>
-    <p id="status"></p>
-    <p id="coordinates"></p>
+    <div id="map"></div>
 
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        function getLocation() {
-            const status = document.getElementById('status');
-            const coordinates = document.getElementById('coordinates');
+        let map;
+        let marker;
 
+        function initMap() {
+            // Inicializar o mapa com uma posição padrão.
+            map = L.map('map').setView([51.505, -0.09], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        }
+
+        function getLocation() {
             if (navigator.geolocation) {
-                status.textContent = 'Obtendo localização...';
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
 
-                        status.textContent = 'Localização obtida com sucesso:';
-                        coordinates.textContent = `Latitude: ${lat}, Longitude: ${lon}`;
+                        const userLocation = [lat, lon];
+
+                        // Atualizar o mapa para a localização do usuário.
+                        map.setView(userLocation, 15);
+
+                        // Adicionar um marcador na localização do usuário.
+                        if (marker) {
+                            marker.setLatLng(userLocation);
+                        } else {
+                            marker = L.marker(userLocation).addTo(map);
+                        }
                     },
                     (error) => {
-                        status.textContent = `Erro: ${error.message}`;
+                        console.error(`Erro: ${error.message}`);
                     }
                 );
             } else {
-                status.textContent = 'Geolocalização não é suportada neste navegador.';
+                console.error('Geolocalização não é suportada neste navegador.');
             }
         }
+
+        // Inicializar o mapa quando a página carrega.
+        window.onload = initMap;
     </script>
 </body>
 </html>
